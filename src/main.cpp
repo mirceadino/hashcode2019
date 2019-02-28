@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+#include "base.h"
 #include "domain.h"
+#include "solvers/mysolver.h"
 
 using namespace std;
 
@@ -23,6 +25,12 @@ int main(int argc, char** argv) {
   Dog dog;
   dog.age = FLAGS_age;
   printf("The dog is %d.\n", dog.age);
+
+  InputReader input;
+  OutputWriter output;
+  unique_ptr<Solver> solver = make_unique<MySolver>(input, output);
+  solver->Solve();
+  output.Write();
 
   return 0;
 }
