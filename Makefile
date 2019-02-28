@@ -5,5 +5,8 @@ EXECS=$(subst .cpp,,$(SOURCES))
 
 all: $(EXECS)
 
+zip:
+	zip -r -X hashcode.zip src/
+
 clean:
 		$(RM) $(EXECS)
