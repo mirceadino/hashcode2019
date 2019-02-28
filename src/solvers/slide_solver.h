@@ -31,6 +31,11 @@ class SlideSolver: public Solver {
     void Solve() override {
       vector<Photo> photos = input_.GetPhotos();
 
+      /* int seed; */
+      /* srand(seed = clock()); */
+      /* fprintf(stderr, "Seed: %d\n", seed); */
+      /* random_shuffle(photos.begin(), photos.end()); */
+
       // Create id to photo.
       map<int, Photo> id_to_photo;
       for (Photo& photo : photos) {
@@ -93,107 +98,129 @@ class SlideSolver: public Solver {
         }
 
         do {
+          if (output_.NumSlides() % 1000 == 0) {
+            fprintf(stderr, "Slides until now: %d\n", output_.NumSlides());
+          }
+
           Slide best_horizontal_slide;
           Slide best_vertical_slide;
 
           // CHESTIA CU ORIZONTALE.
-          {
-            // Get photo candidate ids.
-            unordered_set<int> candidate_ids;
-            for (string& tag : last_slide.tags) {
-              for (int& id : tag_to_photos[tag]) {
-                if (!visited_photos[id] && id_to_photo[id].horizontal) {
-                  candidate_ids.insert(id);
-                  if (candidate_ids.size() >= 100) {
-                    break;
-                  }
-                }
-              }
-              if (candidate_ids.size() >= 100) {
-                break;
-              }
-            }
+          /* { */
+          /*   // Get photo candidate ids. */
+          /*   unordered_set<int> candidate_ids; */
+          /*   for (string& tag : last_slide.tags) { */
+          /*     for (int& id : tag_to_photos[tag]) { */
+          /*       if (!visited_photos[id] && id_to_photo[id].horizontal) { */
+          /*         candidate_ids.insert(id); */
+          /*         if (candidate_ids.size() >= 100) { */
+          /*           break; */
+          /*         } */
+          /*       } */
+          /*     } */
+          /*     if (candidate_ids.size() >= 100) { */
+          /*       break; */
+          /*     } */
+          /*   } */
 
-            // Break condition == if no photo candidates.
-            if (candidate_ids.empty()) {
-              break;
-            }
+          /*   // Break condition == if no photo candidates. */
+          /*   if (!candidate_ids.empty()) { */
+          /*     // Find best candidate. */
+          /*     int best_score = -1; */
+          /*     int best_candidate_id = -1; */
+          /*     for (const int& id : candidate_ids) { */
+          /*       int score = GetScoreBetweenSlides(Slide(id_to_photo[id]), last_slide); */
+          /*       if (score > best_score) { */
+          /*         best_score = score; */
+          /*         best_candidate_id = id; */
+          /*       } */
+          /*     } */
 
-            // Find best candidate.
-            int best_score = -1;
-            int best_candidate_id = -1;
-            for (const int& id : candidate_ids) {
-              int score = GetScoreBetweenSlides(Slide(id_to_photo[id]), last_slide);
-              if (score > best_score) {
-                best_score = score;
-                best_candidate_id = id;
-              }
-            }
-
-            best_horizontal_slide = Slide(id_to_photo[best_candidate_id]);
-          }
+          /*     best_horizontal_slide = Slide(id_to_photo[best_candidate_id]); */
+          /*   } */
+          /* } */
 
           // CHESTIA CU VERTICALE
           {
             // Get photo candidate ids.
             unordered_set<int> candidate_ids;
+            unordered_set<int> non_candidate_ids;
             for (string& tag : last_slide.tags) {
               for (int& id : tag_to_photos[tag]) {
                 if (!visited_photos[id] && !id_to_photo[id].horizontal) {
                   candidate_ids.insert(id);
-                  if (candidate_ids.size() >= 20) {
+                  if (candidate_ids.size() >= 50) {
                     break;
                   }
-                }
-              }
-              if (candidate_ids.size() >= 20) {
+                }               }
+              if (candidate_ids.size() >= 50) {
                 break;
               }
             }
 
             // Break condition == if no photo candidates.
-            if (candidate_ids.size() <= 1) {
-              break;
-            }
-
-            // Find best candidate #1.
-            int best_score = -1;
-            int best_candidate_id = -1;
-            for (const int& id : candidate_ids) {
-              int score = GetScoreBetweenSlides(Slide(id_to_photo[id]), last_slide);
-              if (score > best_score) {
-                best_score = score;
-                best_candidate_id = id;
-              }
-            }
-
-            Photo first_vertical = id_to_photo[best_candidate_id];
-
-            // Find best candidate #2.
-            best_score = -1;
-            best_candidate_id = -1;
-            for (const int& id : candidate_ids) {
-              if (id == first_vertical.id) {
-                continue;
+            if (candidate_ids.size() > 2) {
+              // Find best candidate #1.
+              int best_score = -1;
+              int best_candidate_id = -1;
+              for (const int& id : candidate_ids) {
+                int score = GetScoreBetweenSlides(Slide(id_to_photo[id]), last_slide);
+                if (score > best_score) {
+                  best_score = score;
+                  best_candidate_id = id;
+                }
               }
 
-              int score = GetScoreBetweenSlides(Slide(id_to_photo[id], first_vertical),
-                                                last_slide);
-              if (score > best_score) {
-                best_score = score;
-                best_candidate_id = id;
+              Photo first_vertical = id_to_photo[best_candidate_id];
+
+              // Find best candidate #2.
+              best_score = -1;
+              best_candidate_id = -1;
+              for (const int& id : candidate_ids) {
+                if (id == first_vertical.id) {
+                  continue;
+                }
+
+                int score = GetScoreBetweenSlides(Slide(id_to_photo[id], first_vertical),
+                                                  last_slide);
+                if (score > best_score) {
+                  best_score = score;
+                  best_candidate_id = id;
+                }
               }
+
+              // NOTE: De inlocuit candidate #2 cu un non-candidate vertical random.
+
+              assert(best_candidate_id >= 0);
+              Photo second_vertical = id_to_photo[best_candidate_id];
+              best_vertical_slide = Slide(first_vertical, second_vertical);
             }
+          }
 
-            // NOTE: De inlocuit candidate #2 cu un non-candidate vertical random.
+          if (!best_horizontal_slide.photos.empty()
+              && best_vertical_slide.photos.empty()) {
+            last_slide = best_horizontal_slide;
+            output_.Add(last_slide.photos[0]);
+            visited_photos[last_slide.photos[0].id] = true;
+            continue;
+          }
 
-            assert(best_candidate_id >= 0);
-            Photo second_vertical = id_to_photo[best_candidate_id];
-            best_vertical_slide = Slide(first_vertical, second_vertical);
+          if (best_horizontal_slide.photos.empty()
+              && !best_vertical_slide.photos.empty()) {
+            last_slide = best_vertical_slide;
+            output_.Add(last_slide.photos[0], last_slide.photos[1]);
+            visited_photos[last_slide.photos[0].id] = true;
+            visited_photos[last_slide.photos[1].id] = true;
+            continue;
+          }
+
+          if (best_horizontal_slide.photos.empty()
+              && best_vertical_slide.photos.empty()) {
+            break;
           }
 
           if (GetScoreBetweenSlides(last_slide,
-                                    best_horizontal_slide) > GetScoreBetweenSlides(last_slide,
+                                    best_horizontal_slide) >= GetScoreBetweenSlides(last_slide,
                                         best_vertical_slide)) {
             last_slide = best_horizontal_slide;
             output_.Add(last_slide.photos[0]);
@@ -205,6 +232,7 @@ class SlideSolver: public Solver {
             visited_photos[last_slide.photos[1].id] = true;
           }
         } while (true);
+        fprintf(stderr, ">>>>>>>>>>> Slides until now: %d\n", output_.NumSlides());
       } while (true);
 
       AddVerticalPairs();

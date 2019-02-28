@@ -67,6 +67,10 @@ class OutputWriter {
       }
     }
 
+    int NumSlides() {
+      return slides_.size();
+    }
+
   protected:
     void DequeOptimization() {
       fprintf(stderr, "Prima poza INAINTE DE deque optimization: %d\n",

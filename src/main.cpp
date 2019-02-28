@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
   OutputWriter output;
   input.Read();
   unique_ptr<Solver> solver = make_unique<SlideSolver>(input, output);
+  /* unique_ptr<Solver> solver = make_unique<HorizontalGreedySolver>(input, output); */
   solver->Solve();
   output.Write();
 
