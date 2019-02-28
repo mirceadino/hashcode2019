@@ -5,10 +5,10 @@ We participated in the 2019 edition of [Google Hash Code](https://hashcode.withg
 Our solutions got the following scores:
 
 A - Example - 2 <br/>
-B - Lovely landscapes - 205773 <br/>
-C - Memorable moments - 1687 <br/>
-D - Pet pictures - 306560 <br/>
-E - Shiny selfies - 425657 <br/>
+B - Lovely landscapes - 205,773 <br/>
+C - Memorable moments - 1,687 <br/>
+D - Pet pictures - 306,560 <br/>
+E - Shiny selfies - 425,657 <br/>
 **Total score - 939,679**
 
 ## Usage
